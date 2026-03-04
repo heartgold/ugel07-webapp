@@ -1,0 +1,216 @@
+<div class="buscador-container">
+  <mat-card class="buscador-card">
+    <mat-card-header>
+      <mat-card-title>Buscador de Resoluciones UGEL 07</mat-card-title>
+      <mat-card-subtitle>Encuentre resoluciones con filtros avanzados</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="filters-row">
+        <!-- Fila Superior -->
+        <mat-form-field appearance="outline" class="filter-item min-width">
+          <mat-label>Año</mat-label>
+          <mat-select [(ngModel)]="filtroAnio">
+            <mat-option value="">Todos los Años</mat-option>
+            <mat-option *ngFor="let a of anios" [value]="a">{{ a }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-item min-width">
+          <mat-label>Mes</mat-label>
+          <mat-select [(ngModel)]="filtroMes">
+            <mat-option value="">Todos los Meses</mat-option>
+            <mat-option *ngFor="let m of meses" [value]="m.value">{{ m.name }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-item auto-grow">
+          <mat-label>Área Emisora</mat-label>
+          <input type="text" placeholder="Ej. Personal" matInput [formControl]="areaControl" [matAutocomplete]="auto">
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let area of filteredAreas | async" [value]="area">
+              {{area}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+
+      <div class="search-row">
+        <!-- Búsqueda Principal -->
+        <mat-form-field appearance="outline" class="select-tipo">
+          <mat-label>Buscar término en</mat-label>
+          <mat-select [(ngModel)]="tipoBusqueda">
+            <mat-option value="nro_rd">Nro RD</mat-option>
+            <mat-option value="dni">DNI Beneficiario</mat-option>
+            <mat-option value="asunto">Asunto/Resumen</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="input-termino">
+          <mat-label>Ingrese el término a buscar</mat-label>
+          <input matInput [(ngModel)]="termino" (keyup.enter)="buscar()" placeholder="...">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="actions-wrapper">
+          <button mat-raised-button color="primary" class="btn-action" (click)="buscar()"
+            [disabled]="buscando || (!termino && !filtroAnio && !filtroMes && !areaControl.value)">
+            <mat-icon>search</mat-icon>
+            {{ buscando ? 'Buscando...' : 'Buscar' }}
+          </button>
+          <button mat-stroked-button color="warn" class="btn-action" (click)="limpiarFiltrosGenerales()">
+            Limpiar Todos
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="mensajeError" class="error-message">
+        {{ mensajeError }}
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- RESULTADOS TABLA HORIZONTAL EXPANSIBLE -->
+  <div class="resultados-container" [hidden]="!dataSource || dataSource.data.length === 0">
+    <mat-card>
+      <mat-card-header class="table-card-header">
+        <mat-card-title>Filas Encontradas: {{ dataSource.data.length }} (Despliegue de Beneficiarios
+          Independientes)</mat-card-title>
+        <div class="header-tools">
+          <button mat-flat-button color="accent" (click)="abrirFormulario()">
+            <mat-icon>add</mat-icon> Nueva Resolución
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 excel-table">
+
+            <!-- ====== DEFINICIÓN DE COLUMNAS DE DATOS ======== -->
+
+            <!-- nro_cargo Column -->
+            <ng-container matColumnDef="nro_cargo">
+              <th mat-header-cell *matHeaderCellDef> Nro Cargo </th>
+              <td mat-cell *matCellDef="let row"> <strong>{{row.nro_cargo}}</strong> </td>
+            </ng-container>
+
+            <!-- fecha_cargo Column -->
+            <ng-container matColumnDef="fecha_cargo">
+              <th mat-header-cell *matHeaderCellDef> Fecha de Cargo </th>
+              <td mat-cell *matCellDef="let row">
+                {{row.fecha_cargo ? (row.fecha_cargo | date:'dd/MM/yyyy') : 'S/F'}}
+              </td>
+            </ng-container>
+
+            <!-- NRO RD Column (STICKY) -->
+            <ng-container matColumnDef="nro_rd" sticky>
+              <th mat-header-cell *matHeaderCellDef class="sticky-col sticky-header"> Nro RD </th>
+              <td mat-cell *matCellDef="let row" class="sticky-col highlight-rd"> <strong>{{row.nro_rd}}</strong> </td>
+            </ng-container>
+
+            <!-- fecha_rd Column -->
+            <ng-container matColumnDef="fecha_rd">
+              <th mat-header-cell *matHeaderCellDef> Fecha RD </th>
+              <td mat-cell *matCellDef="let row">
+                {{row.fecha_rd ? (row.fecha_rd | date:'dd/MM/yyyy') : 'S/F'}}
+              </td>
+            </ng-container>
+
+            <!-- anio Column -->
+            <ng-container matColumnDef="anio">
+              <th mat-header-cell *matHeaderCellDef> Año </th>
+              <td mat-cell *matCellDef="let row"> {{row.anio}} </td>
+            </ng-container>
+
+            <!-- asunto Column -->
+            <ng-container matColumnDef="asunto">
+              <th mat-header-cell *matHeaderCellDef> Asunto / Resumen </th>
+              <td mat-cell *matCellDef="let row" class="asunto-cell tooltip-text" [matTooltip]="row.asunto">
+                {{row.asunto}}
+              </td>
+            </ng-container>
+
+            <!-- area Column -->
+            <ng-container matColumnDef="area">
+              <th mat-header-cell *matHeaderCellDef> Área Emisora </th>
+              <td mat-cell *matCellDef="let row"> {{row.area}} </td>
+            </ng-container>
+
+            <!-- expediente Column -->
+            <ng-container matColumnDef="expediente">
+              <th mat-header-cell *matHeaderCellDef> Nro Expediente </th>
+              <td mat-cell *matCellDef="let row"> {{row.expediente}} </td>
+            </ng-container>
+
+            <!-- receptor Column -->
+            <ng-container matColumnDef="receptor">
+              <th mat-header-cell *matHeaderCellDef> Receptor (Administrado) </th>
+              <td mat-cell *matCellDef="let row"> {{row.receptor}} </td>
+            </ng-container>
+
+            <!-- dni Column -->
+            <ng-container matColumnDef="dni">
+              <th mat-header-cell *matHeaderCellDef> DNI </th>
+              <td mat-cell *matCellDef="let row"> <span class="badget-dni">{{row.dni}}</span> </td>
+            </ng-container>
+
+            <!-- estado Column -->
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef> Estado Notificación </th>
+              <td mat-cell *matCellDef="let row">
+                <span class="estado-badge" [ngClass]="{
+                        'estado-notificado': row.estado?.toLowerCase().includes('notificado'),
+                        'estado-pendiente': row.estado?.toLowerCase().includes('pendiente') || row.estado?.toLowerCase().includes('no') || !row.estado
+                      }">
+                  {{ row.estado || 'S/E' }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- fecha_not Column -->
+            <ng-container matColumnDef="fecha_not">
+              <th mat-header-cell *matHeaderCellDef> Fecha de Not. </th>
+              <td mat-cell *matCellDef="let row">
+                {{row.fecha_not ? (row.fecha_not | date:'dd/MM/yyyy') : ''}}
+              </td>
+            </ng-container>
+
+            <!-- notificador Column -->
+            <ng-container matColumnDef="notificador">
+              <th mat-header-cell *matHeaderCellDef> Notificador </th>
+              <td mat-cell *matCellDef="let row"> {{row.notificador}} </td>
+            </ng-container>
+
+            <!-- observacion Column -->
+            <ng-container matColumnDef="observacion">
+              <th mat-header-cell *matHeaderCellDef> Observaciones </th>
+              <td mat-cell *matCellDef="let row"> {{row.observacion}} </td>
+            </ng-container>
+
+            <!-- acciones Column -->
+            <ng-container matColumnDef="acciones" stickyEnd>
+              <th mat-header-cell *matHeaderCellDef class="actions-header"> Acciones </th>
+              <td mat-cell *matCellDef="let row" class="actions-cell">
+                <button mat-icon-button color="primary" (click)="abrirFormulario(row)"
+                  matTooltip="Editar Beneficiario y RD">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <!-- Renderizado de las Filas -->
+            <tr mat-header-row *matHeaderRowDef="columnasAMostrar"></tr>
+            <tr mat-row *matRowDef="let row; columns: columnasAMostrar;" class="data-row"></tr>
+          </table>
+        </div>
+
+        <!-- Controles de Paginación AFUERA DEL SCROLL -->
+        <mat-paginator [pageSizeOptions]="[15, 30, 50, 100]" showFirstLastButtons
+          aria-label="Seleccionar página de resoluciones">
+        </mat-paginator>
+
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

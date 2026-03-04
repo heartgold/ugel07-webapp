@@ -1,0 +1,63 @@
+.resolucion-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.form-field-full {
+    flex: 1 1 calc(50% - 16px);
+    min-width: 250px;
+}
+
+.form-field-mid {
+    flex: 1 1 calc(33% - 16px);
+    min-width: 200px;
+}
+
+.beneficiarios-section {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.beneficiarios-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.beneficiarios-header h3 {
+    margin: 0;
+    color: #3f51b5;
+    font-weight: 500;
+}
+
+.beneficiario-card {
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    background-color: #fafafa;
+    border-left: 4px solid #3f51b5;
+}
+
+.b-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.b-card-header h4 {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}

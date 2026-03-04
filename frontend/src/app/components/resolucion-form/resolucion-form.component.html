@@ -1,0 +1,148 @@
+<h2 mat-dialog-title>{{ esNueva ? 'Nueva Resolución' : 'Editar Resolución' }}</h2>
+
+<mat-dialog-content>
+    <form [formGroup]="form" class="resolucion-form">
+
+        <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field-mid">
+                <mat-label>Nro RD</mat-label>
+                <input matInput formControlName="nro_rd" placeholder="Ej. 0025">
+                <mat-error *ngIf="form.get('nro_rd')?.hasError('required')">Requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field-mid">
+                <mat-label>Año Ejercicio</mat-label>
+                <input matInput formControlName="anio_ejercicio">
+                <mat-error *ngIf="form.get('anio_ejercicio')?.hasError('required')">Requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field-mid">
+                <mat-label>Fecha RD</mat-label>
+                <input matInput [matDatepicker]="pickerRd" formControlName="fecha_rd">
+                <mat-datepicker-toggle matIconSuffix [for]="pickerRd"></mat-datepicker-toggle>
+                <mat-datepicker #pickerRd></mat-datepicker>
+            </mat-form-field>
+        </div>
+
+        <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field-full">
+                <mat-label>Nro Expediente</mat-label>
+                <input matInput formControlName="nro_expediente">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field-full">
+                <mat-label>Área Emisora</mat-label>
+                <input matInput formControlName="area_emisora" [matAutocomplete]="autoArea">
+                <mat-autocomplete #autoArea="matAutocomplete">
+                    <mat-option *ngFor="let area of areasPredefinidas" [value]="area">
+                        {{area}}
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+        </div>
+
+        <!-- SECCIÓN DE BENEFICIARIOS (Array) -->
+        <div class="beneficiarios-section">
+            <div class="beneficiarios-header">
+                <h3>Beneficiarios ({{beneficiarios.length}})</h3>
+                <button mat-stroked-button color="primary" type="button" (click)="agregarBeneficiario()">
+                    <mat-icon>person_add</mat-icon> Agregar Beneficiario
+                </button>
+            </div>
+
+            <div formArrayName="beneficiarios">
+                <div *ngFor="let b of beneficiarios.controls; let i=index" [formGroupName]="i"
+                    class="beneficiario-card mat-elevation-z2">
+
+                    <div class="b-card-header">
+                        <h4>Benficiario #{{i + 1}}</h4>
+                        <button mat-icon-button color="warn" type="button" (click)="removerBeneficiario(i)"
+                            [disabled]="beneficiarios.length === 1">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>DNI</mat-label>
+                            <input matInput formControlName="dni_administrado">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-full">
+                            <mat-label>Nombre Completo / Titular</mat-label>
+                            <input matInput formControlName="nombre_administrado">
+                            <mat-error *ngIf="b.get('nombre_administrado')?.hasError('required')">Requerido</mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="form-field-full">
+                            <mat-label>Asunto / Regimen / Motivo</mat-label>
+                            <textarea matInput formControlName="asunto_resumen" rows="1"></textarea>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-full">
+                            <mat-label>Observaciones Adicionales</mat-label>
+                            <textarea matInput formControlName="observaciones" rows="1"></textarea>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>Nro Cargo</mat-label>
+                            <input matInput formControlName="nro_cargo">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>Fecha de Cargo</mat-label>
+                            <input matInput [matDatepicker]="pickerCargo" formControlName="fecha_cargo">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerCargo"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerCargo></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>Estado de Notificación</mat-label>
+                            <mat-select formControlName="estado_notificacion">
+                                <mat-option *ngFor="let e of estadosPredefinidos" [value]="e">{{e}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>Fecha Notificada</mat-label>
+                            <input matInput [matDatepicker]="pickerNot" formControlName="fecha_notificacion">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerNot"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerNot></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>Tipo/Modo Notif.</mat-label>
+                            <input matInput formControlName="tipo_notificacion">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>Notificador</mat-label>
+                            <input matInput formControlName="notificador_responsable">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>Entidad / I.E.</mat-label>
+                            <input matInput formControlName="entidad_ie">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="form-field-mid">
+                            <mat-label>Correo Electrónico</mat-label>
+                            <input matInput formControlName="correo_electronico" type="email">
+                        </mat-form-field>
+                    </div>
+
+                </div>
+            </div>
+        </div> <!-- /Beneficiarios -->
+
+    </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="cancelar()">Cerrar</button>
+    <button mat-flat-button color="primary" (click)="guardar()" [disabled]="form.invalid">Guardar Resolucion</button>
+</mat-dialog-actions>
